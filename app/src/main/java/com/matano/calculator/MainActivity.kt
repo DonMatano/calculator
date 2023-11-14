@@ -11,8 +11,11 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.IntrinsicSize
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -25,10 +28,12 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.modifier.modifierLocalConsumer
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
@@ -53,6 +58,8 @@ val DarkGreyColor = Color(0xFF383838)
 val GoldishColor = Color(0XFFA5914B)
 val LightYellowColor = Color(0XFFB8C248)
 
+
+
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -69,11 +76,11 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun ButtonComp( modifier: Modifier = Modifier, textColor: Color = GoldishColor, buttonColor: Color= Color.Black,  text: String) {
+fun ButtonComp( modifier: Modifier = Modifier, shape: Shape = CircleShape, textColor: Color = GoldishColor, buttonColor: Color= Color.Black,  text: String) {
 
     Button(colors = ButtonDefaults.buttonColors(containerColor = buttonColor),
-        modifier = modifier.size(70.dp),
-        shape = CircleShape,
+        modifier = modifier,
+        shape = shape,
         onClick = { /*TODO*/ }) {
         Text(
             modifier = Modifier.fillMaxWidth(),
@@ -113,7 +120,7 @@ enum class Arithmetic(val symbol: String) {
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-fun ButtonsSection() {
+fun ButtonsSection(modifier: Modifier = Modifier) {
     val buttonsArithmetics = listOf<Arithmetic>(
         Arithmetic.CLEAR,
         Arithmetic.BRACKET,
@@ -136,31 +143,37 @@ fun ButtonsSection() {
         Arithmetic.EQUALS,
     )
     Box(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxSize()
+            .fillMaxWidth()
             .padding(11.dp, 40.dp)
     ) {
         FlowRow(
             modifier = Modifier
                 .padding(4.dp)
-                .fillMaxSize(),
-            horizontalArrangement = Arrangement.spacedBy(4.dp),
+                .fillMaxSize()
+                .fillMaxWidth()
+            ,
+            horizontalArrangement = Arrangement.SpaceEvenly,
+            verticalAlignment = Alignment.CenterVertically,
             maxItemsInEachRow = 4
         ) {
             for (buttonsArithmetic in buttonsArithmetics) {
                 val isEqualButton = buttonsArithmetic.symbol == Arithmetic.EQUALS.symbol
                 val buttonModifier = Modifier
+                    .size(90.dp)
+                    .weight(1f)
                 var buttonColor = Color.Black
                 var textColor = GoldishColor
+                var shape = CircleShape
                 if (isEqualButton) {
-                    println("isEqualButton")
-                    println(buttonsArithmetic.symbol)
-                    buttonModifier.weight(2f)
                     buttonColor = GoldishColor
                     textColor = Color.Black
+                    buttonModifier.weight(2f)
+                    shape = RoundedCornerShape(20.dp)
 
                 }
-                    ButtonComp(modifier = buttonModifier, textColor, buttonColor, text = buttonsArithmetic.symbol)
+                ButtonComp(modifier = buttonModifier,shape, textColor, buttonColor, text = buttonsArithmetic.symbol)
             }
 
         }
@@ -170,9 +183,9 @@ fun ButtonsSection() {
 
 
 @Composable
-fun CalculationScreenOperationText() {
+fun CalculationScreenOperationText(modifier: Modifier = Modifier) {
     Text(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = modifier,
         textAlign = TextAlign.End,
         fontSize = 28.sp,
         color = GoldishColor,
@@ -184,11 +197,9 @@ fun CalculationScreenOperationText() {
 }
 
 @Composable
-fun CalculationResultText() {
+fun CalculationResultText(modifier: Modifier = Modifier) {
     Text(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(top = 34.dp),
+        modifier = modifier,
         textAlign = TextAlign.End,
         fontSize = 28.sp,
         letterSpacing = 2.4.sp,
@@ -200,23 +211,26 @@ fun CalculationResultText() {
 }
 
 @Composable
-fun CalculationScreen() {
+fun CalculationScreen(modifier: Modifier = Modifier) {
     Column(
-        modifier = Modifier
+        modifier = modifier
             .clip(RoundedCornerShape(0.dp, 0.dp, 20.dp, 20.dp))
             .background(color = LightGreyColor)
             .padding(11.dp, 40.dp)
+            .fillMaxWidth()
     ) {
-        CalculationScreenOperationText()
-        CalculationResultText()
+        CalculationScreenOperationText(modifier= Modifier.fillMaxWidth())
+        CalculationResultText(modifier = Modifier
+            .fillMaxWidth()
+            .padding(top = 34.dp))
     }
 }
 
 @Composable
-fun CalculatorScreen() {
+fun CalculatorScreen(modifier: Modifier = Modifier) {
     Column(
         modifier =
-        Modifier
+        modifier
             .fillMaxSize()
             .background(DarkGreyColor)
     ) {
