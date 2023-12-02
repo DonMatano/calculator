@@ -1,40 +1,34 @@
 package com.matano.calculator
 
 import android.os.Bundle
-import android.widget.GridLayout
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
-import androidx.compose.foundation.layout.IntrinsicSize
-import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
-import androidx.compose.ui.modifier.modifierLocalConsumer
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontStyle
@@ -60,6 +54,7 @@ val LightYellowColor = Color(0XFFB8C248)
 
 
 
+
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -76,12 +71,12 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun ButtonComp( modifier: Modifier = Modifier, shape: Shape = CircleShape, textColor: Color = GoldishColor, buttonColor: Color= Color.Black,  text: String) {
+fun ButtonComp( modifier: Modifier = Modifier, onButtonClickHandler: () -> Unit , shape: Shape = CircleShape, textColor: Color = GoldishColor, buttonColor: Color= Color.Black,  text: String) {
 
     Button(colors = ButtonDefaults.buttonColors(containerColor = buttonColor),
         modifier = modifier,
         shape = shape,
-        onClick = { /*TODO*/ }) {
+        onClick = { onButtonClickHandler() }) {
         Text(
             modifier = Modifier.fillMaxWidth(),
             text = text,
@@ -96,15 +91,17 @@ fun ButtonComp( modifier: Modifier = Modifier, shape: Shape = CircleShape, textC
     }
 }
 
-enum class Arithmetic(val symbol: String) {
+enum class Token(val symbol: String) {
     CLEAR("AC"),
     BRACKET("[]"),
+    OPEN_BRACKET("("),
+    CLOSE_BRACKET(")"),
     DELETE("C"),
     DIVIDE("/"),
     SEVEN("7"),
     EIGHT("8"),
     NINE("9"),
-    MULTIPLY("X"),
+    MULTIPLY("x"),
     FOUR("4"),
     FIVE("5"),
     SIX("6"),
@@ -118,29 +115,33 @@ enum class Arithmetic(val symbol: String) {
     EQUALS("="),
 }
 
+fun handleInput(inputString: String) {
+
+
+}
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-fun ButtonsSection(modifier: Modifier = Modifier) {
-    val buttonsArithmetics = listOf<Arithmetic>(
-        Arithmetic.CLEAR,
-        Arithmetic.BRACKET,
-        Arithmetic.DELETE,
-        Arithmetic.DIVIDE,
-        Arithmetic.SEVEN,
-        Arithmetic.EIGHT,
-        Arithmetic.NINE,
-        Arithmetic.MULTIPLY,
-        Arithmetic.FOUR,
-        Arithmetic.FIVE,
-        Arithmetic.SIX,
-        Arithmetic.SUBTRACT,
-        Arithmetic.ONE,
-        Arithmetic.TWO,
-        Arithmetic.THREE,
-        Arithmetic.ADD,
-        Arithmetic.ZERO,
-        Arithmetic.DECIMAL_POINT,
-        Arithmetic.EQUALS,
+fun ButtonsSection(modifier: Modifier = Modifier, handler: (Token) -> Unit ) {
+    val buttonsTokens = listOf<Token>(
+        Token.CLEAR,
+        Token.BRACKET,
+        Token.DELETE,
+        Token.DIVIDE,
+        Token.SEVEN,
+        Token.EIGHT,
+        Token.NINE,
+        Token.MULTIPLY,
+        Token.FOUR,
+        Token.FIVE,
+        Token.SIX,
+        Token.SUBTRACT,
+        Token.ONE,
+        Token.TWO,
+        Token.THREE,
+        Token.ADD,
+        Token.ZERO,
+        Token.DECIMAL_POINT,
+        Token.EQUALS,
     )
     Box(
         modifier = modifier
@@ -158,8 +159,8 @@ fun ButtonsSection(modifier: Modifier = Modifier) {
             verticalAlignment = Alignment.CenterVertically,
             maxItemsInEachRow = 4
         ) {
-            for (buttonsArithmetic in buttonsArithmetics) {
-                val isEqualButton = buttonsArithmetic.symbol == Arithmetic.EQUALS.symbol
+            for (buttonsToken in buttonsTokens) {
+                val isEqualButton = buttonsToken.symbol == Token.EQUALS.symbol
                 val buttonModifier = Modifier
                     .size(90.dp)
                     .weight(1f)
@@ -173,7 +174,10 @@ fun ButtonsSection(modifier: Modifier = Modifier) {
                     shape = RoundedCornerShape(20.dp)
 
                 }
-                ButtonComp(modifier = buttonModifier,shape, textColor, buttonColor, text = buttonsArithmetic.symbol)
+                val onButtonClickHandler: () -> Unit = {
+                   handler(buttonsToken)
+                }
+                ButtonComp(modifier = buttonModifier, onButtonClickHandler,shape, textColor, buttonColor, text = buttonsToken.symbol)
             }
 
         }
@@ -183,7 +187,7 @@ fun ButtonsSection(modifier: Modifier = Modifier) {
 
 
 @Composable
-fun CalculationScreenOperationText(modifier: Modifier = Modifier) {
+fun CalculationScreenOperationText(modifier: Modifier = Modifier, text: String) {
     Text(
         modifier = modifier,
         textAlign = TextAlign.End,
@@ -192,12 +196,12 @@ fun CalculationScreenOperationText(modifier: Modifier = Modifier) {
         letterSpacing = 2.4.sp,
         fontFamily = DigitalNumberFamily,
         lineHeight = 33.sp,
-        text = "50,000 + 20,000"
+        text= text
     )
 }
 
 @Composable
-fun CalculationResultText(modifier: Modifier = Modifier) {
+fun CalculationResultText(modifier: Modifier = Modifier, text: String) {
     Text(
         modifier = modifier,
         textAlign = TextAlign.End,
@@ -206,12 +210,12 @@ fun CalculationResultText(modifier: Modifier = Modifier) {
         fontFamily = DigitalNumberFamily,
         color = LightYellowColor,
         lineHeight = 33.sp,
-        text = "70,000",
+        text = text,
     )
 }
 
 @Composable
-fun CalculationScreen(modifier: Modifier = Modifier) {
+fun CalculationScreen(modifier: Modifier = Modifier, calculationText: String, calculationResultText: String) {
     Column(
         modifier = modifier
             .clip(RoundedCornerShape(0.dp, 0.dp, 20.dp, 20.dp))
@@ -219,15 +223,76 @@ fun CalculationScreen(modifier: Modifier = Modifier) {
             .padding(11.dp, 40.dp)
             .fillMaxWidth()
     ) {
-        CalculationScreenOperationText(modifier= Modifier.fillMaxWidth())
+        CalculationScreenOperationText(modifier= Modifier.fillMaxWidth(), text = calculationText)
         CalculationResultText(modifier = Modifier
             .fillMaxWidth()
-            .padding(top = 34.dp))
+            .padding(top = 34.dp), text = calculationResultText)
     }
 }
 
 @Composable
 fun CalculatorScreen(modifier: Modifier = Modifier) {
+    var calculationText by remember {
+        mutableStateOf("")
+    }
+    val calculationResultText by remember {
+        mutableStateOf("")
+    }
+    var listOfOperationsToRun by remember {
+        mutableStateOf(mutableListOf(""))
+    }
+
+    var currentNumber by remember {
+        mutableStateOf(0)
+    }
+
+
+    var isCurrentNumberADecimal by remember {
+        mutableStateOf(false)
+    }
+
+    val numberListString = listOf("1", "2", "3", "4", "5", "6", "7", "8", "9", "0")
+    val operationListString = listOf("(", ")","+", "/", "*", "-")
+    fun handleNumber (numberInString: String) {
+        var lastDigit = listOfOperationsToRun.last()
+        val isANumberString = numberInString.contains(numberInString)
+        val isLastDigitAnOperation = operationListString.contains(lastDigit)
+        if (isLastDigitAnOperation) {
+            listOfOperationsToRun.add(numberInString)
+        } else {
+            // Is a number append the value
+            listOfOperationsToRun.removeLast()
+            listOfOperationsToRun.add(lastDigit.plus(numberInString))
+        }
+    }
+    fun handleAddingNumericDigit(digit: Token) {
+        calculationText = calculationText.plus(digit.symbol)
+
+    }
+
+    val handleAction: (symbol: Token) -> Unit =  {
+        calculationText = when(it) {
+            Token.ONE -> calculationText.plus("1")
+            Token.TWO -> calculationText.plus("2")
+            Token.THREE ->calculationText.plus("3")
+            Token.FOUR -> calculationText.plus("4")
+            Token.FIVE -> calculationText.plus("5")
+            Token.SIX -> calculationText.plus("6")
+            Token.SEVEN ->  calculationText.plus("7")
+            Token.EIGHT ->  calculationText.plus("8")
+            Token.NINE ->  calculationText.plus("9")
+            Token.ZERO ->  calculationText.plus("0")
+            Token.CLEAR -> ""
+            Token.BRACKET, Token.OPEN_BRACKET, Token.CLOSE_BRACKET -> calculationText.plus("(")
+            Token.DELETE -> ""
+            Token.DIVIDE ->  calculationText.plus("/")
+            Token.MULTIPLY -> calculationText.plus("*")
+            Token.SUBTRACT -> calculationText.plus("-")
+            Token.ADD ->  calculationText.plus("+")
+            Token.DECIMAL_POINT ->  calculationText.plus(".")
+            Token.EQUALS -> ""
+        }
+    }
     Column(
         modifier =
         modifier
@@ -235,8 +300,8 @@ fun CalculatorScreen(modifier: Modifier = Modifier) {
             .background(DarkGreyColor)
     ) {
 
-        CalculationScreen()
-        ButtonsSection()
+        CalculationScreen(calculationText = calculationText, calculationResultText = calculationResultText )
+        ButtonsSection(handler = handleAction)
     }
 }
 
